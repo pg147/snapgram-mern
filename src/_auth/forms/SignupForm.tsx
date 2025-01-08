@@ -19,9 +19,11 @@ import { Button } from "@/components/ui/button";
 
 // Validations
 import { SignupValidation } from "@/lib/validations";
+import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function SignupForm() {
-  const isLoading = true;
+  const isLoading = false;
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -121,15 +123,20 @@ export default function SignupForm() {
             )}
           />
 
+          {/* Submit Button */}
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-primary-600 xl:hover:bg-primary-500"
+            className="w-full h-12 rounded-xl shad-button_primary"
           >
-            {isLoading ? <div className="flex items-center justify-center">
+            {isLoading ? <div className="flex gap-x-2.5 items-center justify-center">
+              <Loader2 className="animate-spin" />
               <p>Loading...</p>
             </div> : <p>Submit</p>}
           </Button>
+          
+          <p className="text-center small-medium xl:base-medium">Already have an account ? <Link to={"/sign-in"} className="text-primary-500 xl:hover:underline">Signin</Link></p>
+
         </form>
       </div>
     </Form>
