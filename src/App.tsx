@@ -9,6 +9,9 @@ import { Homepage } from './_root/pages'
 import AuthLayout from './_auth/AuthLayout'
 import RootLayout from './_root/RootLayout'
 
+// Toaster
+import { Toaster } from './components/ui/toaster'
+
 export default function App() {
     return (
         <main className='flex h-screen'>
@@ -24,6 +27,8 @@ export default function App() {
                     <Route index path='/' element={<Homepage />} />
                 </Route>
             </Routes>
+
+            <Toaster />
         </main>
     )
 }
