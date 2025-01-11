@@ -9,6 +9,7 @@ import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"
 
 // Shadcn Imports
+import { useToast } from "@/hooks/use-toast"
 import {
   Form,
   FormControl,
@@ -20,8 +21,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
 
-// Appwrite imports
-import { createUserAccount } from "@/lib/appwrite/api";
+// Mutations and Queries
+import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations";
 
 // Validations
 import { SignupValidation } from "@/lib/validations";
@@ -30,7 +31,9 @@ import { SignupValidation } from "@/lib/validations";
 import { Loader2 } from "lucide-react";
 
 export default function SignupForm() {
-  const isLoading = false;
+  const { toast } = useToast();
+  const { mutateAsync: createUserAccount, isLoading: isCreatingUser } = useCreateUserAccount();
+  const { mutateAsync: signInAccount, isLoading: isSigningIn } = useSignInAccount();
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -44,9 +47,28 @@ export default function SignupForm() {
 
   // Submit Handler Function
   async function onSubmit(values: z.infer<typeof SignupValidation>) {
-    const newUser = await createUserAccount(values);
+    const newUser = await createUserAccount(values); // from mutation function
 
-    console.log(newUser);
+    // If new user creation didn't succeed
+    if (!newUser) {
+      return toast({
+        variant: "destructive",
+        title: "Signup failed ! Please try again.",
+      })
+    }
+
+    // Creating session for sign-up user
+    const session = await signInAccount({
+      email: values.email, 
+      password: values.password
+    });
+
+    // If Signup failed
+    if (!session) {
+      return toast({
+        title: "Sign in failed ! Please try again."
+      })
+    }
   }
 
   return (
@@ -135,15 +157,15 @@ export default function SignupForm() {
           {/* Submit Button */}
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isCreatingUser}
             className="w-full h-12 rounded-xl shad-button_primary"
           >
-            {isLoading ? <div className="flex gap-x-2.5 items-center justify-center">
+            {isCreatingUser ? <div className="flex gap-x-2.5 items-center justify-center">
               <Loader2 className="animate-spin" />
               <p>Loading...</p>
             </div> : <p>Submit</p>}
           </Button>
-          
+
           <p className="text-center small-medium xl:base-medium">Already have an account ? <Link to={"/sign-in"} className="text-primary-500 xl:hover:underline">Signin</Link></p>
 
         </form>
