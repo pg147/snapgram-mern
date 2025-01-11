@@ -1,3 +1,6 @@
+// React imports
+import { Link } from "react-router-dom";
+
 // React-Hook-Form
 import { useForm } from "react-hook-form"
 
@@ -17,10 +20,14 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
 
+// Appwrite imports
+import { createUserAccount } from "@/lib/appwrite/api";
+
 // Validations
 import { SignupValidation } from "@/lib/validations";
+
+// Icon Library
 import { Loader2 } from "lucide-react";
-import { Link } from "react-router-dom";
 
 export default function SignupForm() {
   const isLoading = false;
@@ -28,16 +35,18 @@ export default function SignupForm() {
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
-      name: "",
       username: "",
+      name: "",
       email: "",
       password: ""
     },
   })
 
   // Submit Handler Function
-  function onSubmit(values: z.infer<typeof SignupValidation>) {
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof SignupValidation>) {
+    const newUser = await createUserAccount(values);
+
+    console.log(newUser);
   }
 
   return (
