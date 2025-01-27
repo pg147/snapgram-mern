@@ -178,8 +178,8 @@ export default function SignupForm() {
           >
             {isCreatingUser ? <div className="flex gap-x-2.5 items-center justify-center">
               <Loader2 className="animate-spin" />
-              <p>Loading...</p>
-            </div> : <p>Submit</p>}
+              <p>Signing up...</p>
+            </div> : <p>Sign up</p>}
           </Button>
 
           <p className="text-center small-medium xl:base-medium">Already have an account ? <Link to={"/sign-in"} className="text-primary-500 xl:hover:underline">Signin</Link></p>
