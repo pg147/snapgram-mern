@@ -22,6 +22,7 @@ export async function createUserAccount(user: INewUser) {
             accountId: newAccount.$id,
             name: newAccount.name,
             username: user.username,
+            email: user.email,
             imageUrl: avatarURL
         })
         
@@ -36,7 +37,7 @@ export async function saveUserToDB(user: {
     accountId: string,
     email: string,
     name: string,
-    imageUrl: URL,
+    imageUrl: string | URL,
     username?: string,
 
 }) {
@@ -59,6 +60,10 @@ export async function signInAccount(user: { email: string; password: string; }) 
     try {
         const session = await account.createEmailPasswordSession(user.email, user.password);
 
+        if (!session) {
+            return console.log("Error creating session.");
+        }
+        
         return session;
     } catch (error) {
         console.log(error);
