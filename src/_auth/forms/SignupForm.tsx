@@ -38,9 +38,6 @@ export default function SignupForm() {
   const navigate = useNavigate();
   const { checkAuthUser, isLoading: isUserLoading } = useAuthContext();
 
-  const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
-  const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
-
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
     defaultValues: {
@@ -51,39 +48,54 @@ export default function SignupForm() {
     },
   })
 
+  const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
+  const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
+
   // Submit Handler Function
   async function onSubmit(values: z.infer<typeof SignupValidation>) {
-    const newUser = await createUserAccount(values); // from mutation function
+    try {
+      const newUser = await createUserAccount(values); // from mutation function
 
-    // If new user creation didn't succeed
-    if (!newUser) {
-      return toast({
-        variant: "destructive",
-        title: "Signup failed ! Please try again.",
-      })
-    }
+      // If new user creation didn't succeed
+      if (!newUser) {
+        toast({
+          variant: "destructive",
+          title: "Signup failed ! Please try again.",
+        });
 
-    // Creating session for sign-up user
-    const session = await signInAccount({
-      email: values.email,
-      password: values.password
-    });
+        return;
+      }
 
-    // If Signup failed
-    if (!session) {
-      return toast({
-        title: "Sign in failed ! Please try again."
-      })
-    }
+      // Creating session for sign-up user
+      const session = await signInAccount({
+        email: values.email,
+        password: values.password
+      });
 
-    const isLoggedIn = await checkAuthUser();
+      // If Signup failed
+      if (!session) {
+        toast({
+          title: "Something went wrong ! Please login to your new account."
+        });
 
-    if (isLoggedIn) {
-      form.reset();
+        navigate('/sign-in');
 
-      navigate('/');
-    } else {
-      return toast({ title: 'Signup failed! Try again.' });
+        return;
+      }
+
+      const isLoggedIn = await checkAuthUser();
+
+      if (isLoggedIn) {
+        form.reset();
+
+        navigate('/');
+      } else {
+        toast({ title: 'Signup failed! Try again.' });
+
+        return;
+      }
+    } catch (error) {
+      console.log({ error });
     }
   }
 
