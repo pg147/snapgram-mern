@@ -1,5 +1,5 @@
 // React imports
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // React-Hook-Form
 import { useForm } from "react-hook-form"
@@ -21,6 +21,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button";
 
+// Context
+import { useAuthContext } from "@/context/AuthContext";
+
 // Mutations and Queries
 import { useCreateUserAccount, useSignInAccount } from "@/lib/react-query/queriesAndMutations";
 
@@ -32,8 +35,11 @@ import { Loader2 } from "lucide-react";
 
 export default function SignupForm() {
   const { toast } = useToast();
-  const { mutateAsync: createUserAccount, isLoading: isCreatingUser } = useCreateUserAccount();
-  const { mutateAsync: signInAccount, isLoading: isSigningIn } = useSignInAccount();
+  const navigate = useNavigate();
+  const { checkAuthUser, isLoading: isUserLoading } = useAuthContext();
+
+  const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
+  const { mutateAsync: signInAccount, isPending: isSigningIn } = useSignInAccount();
 
   const form = useForm<z.infer<typeof SignupValidation>>({
     resolver: zodResolver(SignupValidation),
@@ -59,7 +65,7 @@ export default function SignupForm() {
 
     // Creating session for sign-up user
     const session = await signInAccount({
-      email: values.email, 
+      email: values.email,
       password: values.password
     });
 
@@ -68,6 +74,16 @@ export default function SignupForm() {
       return toast({
         title: "Sign in failed ! Please try again."
       })
+    }
+
+    const isLoggedIn = await checkAuthUser();
+
+    if (isLoggedIn) {
+      form.reset();
+
+      navigate('/');
+    } else {
+      return toast({ title: 'Signup failed! Try again.' });
     }
   }
 
